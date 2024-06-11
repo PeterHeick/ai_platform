@@ -1,0 +1,11 @@
+Filen src/shims-vue.d.ts er en TypeScript definition-fil, der hjælper VSCode og TypeScript med at forstå .vue-filerne i dit Vue 3-projekt.
+
+Linjen declare module '*.vue'; er en såkaldt "shim" eller moduldefinition, der fortæller TypeScript, at alle filer med .vue-endelsen skal behandles som moduler.
+
+I Vue 3 anvendes <script setup>-syntaksen, hvor komponenten bliver eksporteret som standard fra .vue-filen. Uden denne shim-definition ville TypeScript forsøge at parse .vue-filerne som regulære JavaScript-filer, hvilket ville medføre fejl, da .vue-filerne også indeholder HTML-markup og CSS-styles.
+
+Ved at deklarere *.vue som en modul, fortæller du TypeScript, at disse filer skal behandles på en særlig måde. Dette gør det muligt for TypeScript at forstå de specielle egenskaber ved .vue-filerne og give passende TypeScript-support, såsom type-checking, automatisk import-komplettering og anden IDE-hjælp.
+
+Denne shim-fil er ofte inkluderet som standard i nye Vue 3-projekter, der er oprettet med værktøjer som Vue CLI eller Vite. Hvis filen ikke findes i dit projekt, kan du oprette den manuelt i src-mappen for at aktivere TypeScript-support for .vue-filerne.
+
+Bemærk, at denne shim kun er relevant for udviklings- og build-processer, der involverer TypeScript. I den endelige, kompilerede kode vil .vue-filerne blive behandlet og kompileret til regulære JavaScript-moduler af Vue's build-værktøjer.

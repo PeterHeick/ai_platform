@@ -1,0 +1,11 @@
+chromadb
+fastapi
+langchain-chroma
+langchain-cli
+langchain-community
+langchain-openai
+openai
+unstructured
+unstructured[pdf]
+uvicorn
+pypdf2

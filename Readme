@@ -1,0 +1,16 @@
+For at backend kører skal mongoose databasen køre:
+
+tjek om mongoose kører:
+$ sudo netstat -tuln | grep :27017
+
+$ cd db
+$ docker run --name mongodb -d -p 27017:27017 -v mongo-data:/data/db mongo
+
+start backend:
+$ cd backend
+$ npm start
+
+
+Start frontend:
+$ cd frontend
+$ npm run dev

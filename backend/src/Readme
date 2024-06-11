@@ -1,0 +1,11 @@
+Oprettelse af bruger:
+curl -X POST http://localhost:5000/register -H "Content-Type: application/json" -d '{"username":"testuser","password":"testpass"}'
+
+list bruger:
+curl -X POST http://localhost:5000/users
+
+Slet bruger:
+curl -X POST http://localhost:5000/clear-users
+
+Login:
+curl -X POST http://localhost:5000/login -H "Content-Type: application/json" -d '{"username":"testuser","password":"testpass"}'

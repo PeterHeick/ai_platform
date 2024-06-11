@@ -1,0 +1,23 @@
+python -m unittest discover -s tests
+
+unittest er et modul i Python, der bruges til at skrive og køre tests. Det følger en struktur og terminologi inspireret af "xUnit" rammerne, som er en populær familie af testværktøjer til mange programmeringssprog.
+Hvad unittest Gør
+
+    Test Discovery: unittest kan automatisk finde testmoduler og testmetoder i dit projekt. Dette gøres typisk ved at navngive dine testfiler og testmetoder med præfikser som test_.
+
+    Teststruktur: unittest bruger klasser og metoder til at organisere tests. Hver testklasse nedarver fra unittest.TestCase, og hver testmetode skal begynde med test_.
+
+    Assertions: unittest giver en række assertions, der bruges til at kontrollere, om din kode opfører sig som forventet. Eksempler på assertions inkluderer assertEqual, assertTrue, assertFalse, assertRaises, osv.
+
+    Setup og Teardown: unittest understøtter metoder til opsætning og nedtagning af tests. Metoder som setUp, tearDown, setUpClass og tearDownClass kan bruges til at køre kode før og efter tests.
+
+    Test Runner: unittest inkluderer en test runner, der kører dine tests og rapporterer resultaterne. Du kan køre dine tests fra kommandolinjen eller fra en IDE, der understøtter unittest.
+
+
+Uvicorn er en hurtig, asynkron webserver implementeret i Python, designet til at køre ASGI (Asynchronous Server Gateway Interface) applikationer. Det bruges ofte sammen med frameworks som FastAPI og Starlette for at opnå høj ydeevne og lave svartider i webapplikationer. Her er nogle af de vigtigste funktioner og egenskaber ved Uvicorn:
+Funktioner
+
+    Asynkron I/O: Uvicorn er bygget på top af asyncio og uvloop, hvilket gør det muligt at håndtere mange samtidige forbindelser effektivt.
+    HTTP/1.1 og WebSockets: Understøtter både traditionelle HTTP/1.1-forespørgsler og WebSocket-forbindelser.
+    Hot Reloading: Under udvikling kan Uvicorn automatisk genstarte, når der sker ændringer i kildekoden, hvilket letter udviklingsprocessen.
+    Let at bruge: Har et simpelt og intuitivt kommandolinje-interface, hvilket gør det nemt at starte en server.
