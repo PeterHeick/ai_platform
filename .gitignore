@@ -141,7 +141,6 @@ test.json
 save
 ChatWindow.vue
 HelloWorld.vue
-OtherApp.vue
 *.tar
 indexed_files.json
 *.ipynb_checkpoints
