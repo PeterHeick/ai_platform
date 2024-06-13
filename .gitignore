@@ -147,3 +147,5 @@ indexed_files.json
 *.ipynb
 x_*
 startup
+data.json
+result.json

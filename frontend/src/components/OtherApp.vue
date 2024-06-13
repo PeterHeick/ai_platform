@@ -5,7 +5,6 @@
 // Importer nødvendige komponenter eller funktioner her
 
 // Definer reaktive data her
-console.log("Hvidvask");
 
 // Andre funktioner eller logik kommer her
 </script>

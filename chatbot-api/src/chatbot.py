@@ -12,7 +12,7 @@ import PyPDF2
 from dotenv import load_dotenv
 load_dotenv()
 
-dbStore = "./chromadb"
+dbStore = os.path.join(os.path.dirname(__file__), '../../chromadb')
 model = "gpt-3.5-turbo-0125"
 
 llm = ChatOpenAI(model=model)
@@ -50,6 +50,7 @@ def queryRetriever():
     """
       You are a helpful assistant for question-answering tasks.
       Use the following pieces of retrieved context to answer 
+      Use only information from the context to answer
       the question. keep the answer concise. 
       If you don't know the answer, just say that you don't know.
       Conversation with the user should be in danish
@@ -117,7 +118,7 @@ if __name__ == "__main__":
         result = retriever_chain.invoke(input_data, config={"configurable": {"session_id": session_id}})  
         answer = result['answer']
         
-        print(type(result))
+        print(result)
         for d in result["context"]:
             print(d.metadata["source"])
 

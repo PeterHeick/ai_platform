@@ -1,11 +1,17 @@
+import os
 from fastapi import FastAPI, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from chatbot import queryRetriever
+from fastapi.responses import FileResponse
+from langchain_core.documents import Document
 import uuid
+import json
 
 app = FastAPI()
 retriever_chain = queryRetriever()
+
+documents = os.path.join(os.path.dirname(__file__), '../docs')
 
 # Tilføj CORS-handling
 app.add_middleware(
@@ -22,9 +28,21 @@ session_store = {}
 def get_unique_sources(result):
     unique_sources = set()
     for d in result["context"]:
-        unique_sources.add(d["metadata"]["source"])
+        unique_sources.add(d.metadata["source"])
     return list(unique_sources)
 
+
+def custom_serializer(obj):
+    if isinstance(obj, Document):
+        return obj.__dict__
+    elif isinstance(obj, list):
+        return [custom_serializer(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: custom_serializer(value) for key, value in obj.items()}
+    elif hasattr(obj, '__dict__'):
+        return {key: custom_serializer(value) for key, value in obj.__dict__.items()}
+    else:
+        return obj
 
 class QueryRequest(BaseModel):
     query: str
@@ -39,13 +57,35 @@ def get_session_id(request: Request):
         session_store[session_key] = str(uuid.uuid4())  # Generer ny session_id, hvis den ikke findes
     return session_store[session_key]
 
+@app.get("/favicon.ico")
+async def favicon():
+    return "" # FileResponse("path/to/your/favicon.ico")
+                        
 @app.post("/query")
 async def query_endpoint(request: Request, query_request: QueryRequest):
+    print("query " + query_request.query)
     session_id = get_session_id(request)
     input_data = {"input": query_request.query}
     result = retriever_chain.invoke(input_data, config={"configurable": {"session_id": session_id}})
+    
+    with open('result.json', 'w') as file:
+      json.dump(result, file, default=custom_serializer, indent=4)
     answer = result["answer"]
     unique_sources_list = get_unique_sources(result)
-    print(unique_sources_list)
-    return {"answer": answer, "docsource": unique_sources_list}
+    filenames = []
+    for source in unique_sources_list:
+        filenames.append(os.path.basename(source))
+
+    return {"answer": answer, "docsource": filenames}
     
+@app.get("/get_pdf/{filename}")
+async def get_pdf(filename: str):
+    print(f"Requested file: {filename}")
+
+    document_path = os.path.join(documents, filename)
+    print(f"Full path to file: {document_path}")
+
+    if os.path.exists(document_path):
+        return FileResponse(document_path, media_type="application/pdf")
+    else:
+        return {"error": "Fil ikke fundet"}

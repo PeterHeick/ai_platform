@@ -7,11 +7,13 @@
 
 <script setup lang="ts">
 import Toolbar from "./Toolbar.vue";
-
+console.log("Dashboard");
 </script>
 
 <style>
-html, body, #app {
+html,
+body,
+#app {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -24,11 +26,12 @@ html, body, #app {
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background-color: #fafafa; /* Tilføj en lys baggrund */
+  background-color: #fafafa;
+  /* Tilføj en lys baggrund */
 }
 
 .header {
-  position: fixed; 
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
