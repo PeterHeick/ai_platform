@@ -1,25 +1,29 @@
 <template>
   <div class="toolbar">
     <div class="button-group">
-      <button @click="activeView = 'gdpr'">GDPR</button>
-      <button @click="activeView = 'hvidvask'">Hvidvask</button>
-      <button @click="activeView = 'otherApp'">Anden App</button>
+      <button @click="setActiveView('gdpr')">GDPR</button>
+      <button @click="setActiveView('hvidvask')">Hvidvask</button>
+      <button @click="setActiveView('otherApp')">Anden App</button>
     </div>
   </div>
-  <component :is="activeView" /> 
+  <component :is="activeView.component" :botType="activeView.botType" />
 </template>
 
-<script>
-import Gdpr from './Gdpr.vue';
-import Hvidvask from './Hvidvask.vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import Chatbot from './Chatbot.vue';
 import OtherApp from './OtherApp.vue';
 
-export default {
-  components: { Gdpr, Hvidvask, OtherApp },
-  data() {
-    return {
-      activeView: 'gdpr' // Start med GDPR som standard
-    };
+const activeView = ref({
+  component: Chatbot,
+  botType: 'gdpr' // Start med GDPR som standard
+});
+
+const setActiveView = (botType) => {
+  if (botType === 'otherApp') {
+    activeView.value = { component: OtherApp, botType: null };
+  } else {
+    activeView.value = { component: Chatbot, botType: botType };
   }
 };
 </script>

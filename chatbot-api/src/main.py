@@ -2,14 +2,14 @@ import os
 from fastapi import FastAPI, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from chatbot import queryRetriever
+from chatbot import chatbot
 from fastapi.responses import FileResponse
 from langchain_core.documents import Document
 import uuid
 import json
+import jsonpickle
 
 app = FastAPI()
-retriever_chain = queryRetriever()
 
 documents = os.path.join(os.path.dirname(__file__), '../docs')
 
@@ -63,13 +63,17 @@ async def favicon():
                         
 @app.post("/query")
 async def query_endpoint(request: Request, query_request: QueryRequest):
+    query_type = request.query_params.get("type") 
     print("query " + query_request.query)
     session_id = get_session_id(request)
-    input_data = {"input": query_request.query}
-    result = retriever_chain.invoke(input_data, config={"configurable": {"session_id": session_id}})
+
+    print(f"query: {query_request.query}")
+    print(f"session_id: {session_id}")
+    result = chatbot(query_request.query, session_id)
+    answer = result['answer']
     
     with open('result.json', 'w') as file:
-      json.dump(result, file, default=custom_serializer, indent=4)
+      file.write(jsonpickle.encode(result, indent=2))
     answer = result["answer"]
     unique_sources_list = get_unique_sources(result)
     filenames = []

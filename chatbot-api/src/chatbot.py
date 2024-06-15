@@ -4,16 +4,21 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.documents import Document
 from langchain.chains import create_retrieval_chain, create_history_aware_retriever
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import PromptTemplate
 import PyPDF2
+import jsonpickle
 from dotenv import load_dotenv
 load_dotenv()
 
 dbStore = os.path.join(os.path.dirname(__file__), '../../chromadb')
-model = "gpt-3.5-turbo-0125"
+model = "gpt-4o"
+# model = "gpt-3.5-turbo"
 
 llm = ChatOpenAI(model=model)
 embedding_function = OpenAIEmbeddings()
@@ -21,7 +26,7 @@ vectordb = Chroma(persist_directory=dbStore, embedding_function=embedding_functi
 store = {}
 
 # Funktion til at hente dokumenter fra ChromaDB baseret på forespørgsel
-def queryRetriever():
+def chatbot(query: str = None, session_id: str = None):
     
     def get_session_history(session_id: str) -> BaseChatMessageHistory:
         if session_id not in store:
@@ -53,7 +58,8 @@ def queryRetriever():
       Use only information from the context to answer
       the question. keep the answer concise. 
       If you don't know the answer, just say that you don't know.
-      Conversation with the user should be in danish
+      Conversation with the user should be in danish.
+      Keep the answer to no more than 50 words.
       \n\n
       {context}
     """
@@ -75,7 +81,76 @@ def queryRetriever():
         history_messages_key="chat_history",
         output_messages_key="answer",
     )
-    return conversational_rag_chain
+    
+    input_data = {
+       # "chat_history": chat_history,
+       "input": query,
+    }
+    result = conversational_rag_chain.invoke(
+      input_data, config={"configurable": {"session_id": session_id}}
+    ) 
+    
+    verification_prompt = """
+    You are a helpful assistant tasked with verifying the alignment between a question, an answer,
+    and the retrieved documents.
+    Your goal is to ensure that the answer can be derived from the documents
+
+    And that the documents can appropriately address the question.
+    Please analyze the provided question, answer, and the enclosed documents.
+    Based on the following criteria:
+
+    1. The documents contain sufficient information to answer the question.
+    2. The answer is directly supported by the information in the documents.
+
+    If both criteria are met, respond with "yes". If either criterion is not met, respond with "no".
+
+    Question: {question}
+    Answer: {answer}
+
+    Check that the answer to the question is found in this document:
+    <documents>
+      {context}
+    </documents>
+
+    Your response should be "yes" or "no".
+    """
+
+    with open("result.json", "w") as f:
+      f.write(jsonpickle.encode(result))
+    response = {"context": [], "answer": result["answer"]}
+    list_of_documents = ""
+    i = 1
+    for d in result["context"]:
+      start_index = d.metadata["start_index"]
+      relevant_chunk = get_chunk_from_start_index(d.metadata["source"], start_index)
+      list_of_documents += f"Document {i}:\n" + relevant_chunk + "\n\n"
+
+    documents = Document(page_content=list_of_documents, metadata={"source": ""})
+    prompt = ChatPromptTemplate.from_messages(
+      [
+        ("system", verification_prompt),
+        ("human", "{question}"),
+        AIMessage(content="{answer}"),
+      ]
+    )
+
+    verification_chain = create_stuff_documents_chain(llm, prompt)
+
+    input_data = {
+        "context": [documents],
+        "question": query,
+        "answer": result["answer"],
+    }
+    answer = verification_chain.invoke(input_data)
+    if answer == "yes":
+      response = result
+
+    with open("verification.txt", "w") as f:
+      f.write(f"Verification answer: {answer}\nquestion: {query}\nanswer: {result['answer']}\ncontext: {documents}")
+
+    with open("response.json", "w") as f:
+      f.write(jsonpickle.encode(response))
+    return  response
 
 def get_text_around_start_index(text, start_index, chars_before=200, chars_after=1000):
     """
@@ -92,16 +167,32 @@ def get_text_around_start_index(text, start_index, chars_before=200, chars_after
     end = start_index + chars_after
     return text[start:end]
 
+def read_pdf(file_path):
+    # Åbn PDF-filen i binær læse-tilstand
+    with open(file_path, "rb") as file:
+        pdf_reader = PyPDF2.PdfReader(file)
+        all_text = ""
+        
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            text = page.extract_text()
+            all_text += text + "\n"
+        
+        return all_text
+
 def get_chunk_from_start_index(file_path, start_index):
-    with open(file_path, "rb") as f:
-        pdf_reader = PyPDF2.PdfReader(f)
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+    text = read_pdf(file_path)
     return get_text_around_start_index(text, start_index)
   
+def format_multiline_answer(answer: str, indentation: int = 4) -> str:
+    import re
+    indent = " " * indentation
+    # Split svaret ved linjeskift og tilføj indrykning til hver linje
+    lines = answer.split('\n')
+    formatted_lines = [indent + line for line in lines]
+    return '\n'.join(formatted_lines)
+
 if __name__ == "__main__":
-    retriever_chain = queryRetriever()
     session_id = "test_session"
     # chat_history = []
 
@@ -111,20 +202,21 @@ if __name__ == "__main__":
         if user_input.lower() == 'exit':
             break
         
-        input_data = {
-            # "chat_history": chat_history,
-            "input": user_input,
-        }
-        result = retriever_chain.invoke(input_data, config={"configurable": {"session_id": session_id}})  
+        result = chatbot(user_input, session_id)
         answer = result['answer']
         
-        print(result)
-        for d in result["context"]:
-            print(d.metadata["source"])
+        with open("output.txt", "a") as f:
+          f.write(f"User: {user_input}\n")
+          f.write(f"Assistant: {answer}\n\n")
+          f.write("Context:\n")
+          for d in result["context"]:
+            # formatted_source = format_multiline_answer(d.metadata["source"], indentation=4)
+            f.write("  source:\n")
+            f.write(d["metadata"]["source"])
 
-        updated_history = store[session_id]
-        for message in updated_history.messages:
-            print(message)
+          updated_history = store[session_id]
+          for message in updated_history.messages:
+            f.write(message.content)
 
         # for document in result["context"]:
         #   file_path = document.metadata["source"]

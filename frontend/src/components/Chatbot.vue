@@ -25,13 +25,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, watch, defineProps, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 
+const props = defineProps({
+  botType: String
+});
+
+const title = ref('');
 const newMessage = ref('');
 const messages = ref<{ user: string; text: string }[]>([]);
 const docSources = ref<string[]>([]); // Tilføjet til at holde unikke kilder
 const messagesContainer = ref<HTMLElement | null>(null);
+let url = 'http://127.0.0.1:8000/query';
+
+watch(() => props.botType, (newBotType) => {
+  if (newBotType === 'gdpr') {
+    title.value = 'GDPR regler';
+  } else if (newBotType === 'hvidvask') {
+    title.value = 'Hvidvask regler';
+  }
+});
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
@@ -44,9 +58,10 @@ const sendMessage = async () => {
     messages.value.push({ user: 'User', text: newMessage.value });
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/query', {
+      const response = await axios.post(`http://127.0.0.1:8000/query?type=${props.botType}`, {
         query: newMessage.value
       });
+
 
       const botResponse = response.data; // Antag at svaret er i data-feltet
       messages.value.push({ user: 'Bot', text: botResponse.answer });
