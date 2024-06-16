@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
-dbStore = "./chromadb"
+from paragraph_split import split_text
+
+dbStore = "../chromadb"
 model = "gpt-3.5-turbo-0125"
 
 docDir = os.path.join(os.path.dirname(__file__), '../../docs')
@@ -19,7 +21,7 @@ llm = ChatOpenAI(model=model)
 embedding_function = OpenAIEmbeddings()
 vectordb = Chroma(persist_directory=dbStore, embedding_function=embedding_function)
 
-def split_text(documents: list[Document]):
+def split_text_old(documents: list[Document]):
   text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
     chunk_overlap=200,

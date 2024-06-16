@@ -1,0 +1,49 @@
+Programmet indexing.py skal køres i dette katalog.
+indexing.py benytter sit egen virtuelle miljø
+så cd hertil og . db_venv/bin/activate her.
+
+../chromadb kataloget oprettes automatisk, hvis det ikke findes.
+
+I paragraph.py benyttes spaCy.
+SpaCy er et populært open-source bibliotek til avanceret Natural Language Processing (NLP) i Python. Det bruges til at udføre en række NLP-opgaver som tokenisering, lemmatisering, part-of-speech tagging, named entity recognition (NER), og sætningens afhængighedsstruktur.
+
+en_core_web_sm er en af SpaCy's indbyggede modeller, specifikt en lille engelsk model, som indeholder de nødvendige data og forudtrænede vægte til at udføre NLP-opgaver. "sm" står for "small", og denne model er designet til at være hurtig og effektiv, selvom den måske ikke er lige så præcis som større modeller.
+
+Her er nogle af de primære funktioner, som en_core_web_sm modellen tilbyder:
+
+    Tokenization: Opdeling af tekst i ord og sætninger.
+    Part-of-Speech (POS) Tagging: Identifikation af ordklasser som substantiver, verber osv.
+    Dependency Parsing: Analyse af den grammatiske struktur af sætninger.
+    Named Entity Recognition (NER): Identifikation af navngivne enheder som personer, organisationer, lokationer osv.
+    Lemmatization: Konvertering af ord til deres grundform (lemmatisering).
+
+I dit script bruges SpaCy til at splitte teksten i meningsfulde chunks ved at identificere sætninger inden for paragraffer. Dette gør det muligt at opdele teksten på en mere intelligent måde end blot at bruge faste størrelser.
+
+Her er en oversigt over, hvordan SpaCy bruges i dit script:
+
+    Indlæsning af modellen:
+
+    python
+
+nlp = spacy.load('en_core_web_sm')
+
+Dette indlæser den lille engelske model, som indeholder de nødvendige NLP-komponenter.
+
+Behandling af tekst:
+
+python
+
+    doc = nlp(para)
+    sentences = [sent.string.strip() for sent in doc.sents]
+
+    Teksten i en paragraf behandles med SpaCy, og sætningerne udtrækkes.
+
+Denne proces sikrer, at du får meningsfulde tekststykker, som kan bruges til videre analyse eller søgning.
+
+
+-----------
+der findes modeller til dansk i SpaCy. En af de tilgængelige modeller er da_core_news_sm. Denne model kan bruges til de samme NLP-opgaver som de engelske modeller, såsom tokenisering, part-of-speech tagging, dependency parsing og named entity recognition.
+
+For at bruge denne danske model, skal du installere den og derefter indlæse den i dit script. Her er hvordan du gør det
+
+python -m spacy download da_core_news_sm

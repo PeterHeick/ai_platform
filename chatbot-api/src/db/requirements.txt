@@ -1,0 +1,13 @@
+fitz
+frontend
+tools
+spacy
+scikit-learn
+pymupdf
+langchain
+langchain-community
+langchain-openai
+langchain-chroma
+python-dotenv
+unstructured
+unstructured[pdf]

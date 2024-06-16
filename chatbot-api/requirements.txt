@@ -1,5 +1,6 @@
 chromadb
 fastapi
+langchain
 langchain-chroma
 langchain-cli
 langchain-community
@@ -9,3 +10,4 @@ unstructured
 unstructured[pdf]
 uvicorn
 pypdf2
+python-dotenv
